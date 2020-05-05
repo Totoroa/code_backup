@@ -1,5 +1,6 @@
 '''
 build the vulnerability repository.
+(*)Only C/C++ related programs are considered.
 
 1.extract the functions corresponding to vulnerabilities, and store them in (BadFunc)files.
 the vulnerability lines has been marked in (BadFunc)files.
@@ -20,9 +21,15 @@ import datetime
 import parseutility2 as pu
 
 vulrepo_src_path = r"F:\data\self_vul_repo\patches_and_files"
-vulrepo_path = os.path.join(vulrepo_src_path, 'repos')
+vulrepo_path = r"F:\data\self_vul_repo\functions"
+bad_functions = os.path.join(vulrepo_path,"Bad")
+good_functions = os.path.join(vulrepo_path, "Good")
 if not os.path.exists(vulrepo_path):
     os.mkdir(vulrepo_path)
+if not os.path.exists(bad_functions):
+    os.mkdir(bad_functions)
+if not os.path.exists(good_functions):
+    os.mkdir(good_functions)
 
 def get_patch_range_from_patch_content(patch_content):
     '''
@@ -110,8 +117,8 @@ for root,dirs,files in os.walk(vulrepo_src_path):
                     continue
                 cve_id = re.search(r"CVE-\d+-\d+", root).group()
                 index += 1
-                if index < 3272:
-                    continue
+                #if index < 3272:
+                    #continue
                 patch_content = ""
                 BM_content= ""
                 with open(os.path.join(root, f), 'r') as ff:
@@ -134,7 +141,7 @@ for root,dirs,files in os.walk(vulrepo_src_path):
                             continue
                         if l[-2] == '-':
                             name = re.sub("/|:|\*|\?|\"|<|>|\|", "",func.name).replace('\\',"")[:]
-                            with open(os.path.join(vulrepo_path, '(BadFunc)'+cve_id+'$'+f+'$'+name), 'w') as ff:
+                            with open(os.path.join(bad_functions, '(BadFunc)'+cve_id+'$'+f+'$'+name+".c"), 'w') as ff:
                                 string = "".join(BM_Bad_content[func.lines[0]-1:func.lines[1]+1])
                                 ff.write(string)
                             break
@@ -148,7 +155,7 @@ for root,dirs,files in os.walk(vulrepo_src_path):
                             continue
                         if l[-2] == '+':
                             name = re.sub("/|:|\*|\?|\"|<|>|\|", "",func.name).replace('\\',"")
-                            with open(os.path.join(vulrepo_path, '(GoodFunc)'+cve_id+'$'+f+'$'+name), 'w') as ff:
+                            with open(os.path.join(good_functions, '(GoodFunc)'+cve_id+'$'+f+'$'+name), 'w') as ff:
                                 string = "".join(BM_Good_content[func.lines[0]-1:func.lines[1]])
                                 ff.write(string)
                             break
