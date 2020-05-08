@@ -62,12 +62,19 @@ for root, dirs, files in os.walk(vul_func_path):
             #存储函数切片的hash值
             for keys,values in dpd_dic.items():              
                 if keys in del_line_number:
+                    values.sort()
                     print "node_id:", keys
                     print "dpd_id", values
                     slice_content = produce_slice.get_slice_content(func_content, values)
                     slice_content = pu.normalize(slice_content)
                     written[f]['value'].append(slice_content)
                     written[f]['hashvalue'].append(produce_slice.fnv1a_hash(slice_content))
+                    
+            with open(r"vul_repo_backup.json", "a") as fff:
+                fff.write('\"' + f + '\": ')
+                json.dump(written[f], fff)
+                fff.write(", ")
+                    
             print "completed. ", idx, "/", total
             print "---------------------------------------------------------------------"
             idx += 1
