@@ -126,6 +126,7 @@ def get_slice_content(func_content, line_numbers):
     return the slice content corresponding to the line_number(that is 'node_id')
     '''
     content = ""
+    line_numbers.sort()
     for num in line_numbers:
         try:
             content += func_content[num-1]   #two functions have same name is posible, need to be processed.
