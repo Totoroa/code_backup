@@ -142,7 +142,7 @@ for root,dirs,files in os.walk(vulrepo_src_path):
                         if l[-2] == '-':
                             name = re.sub("/|:|\*|\?|\"|<|>|\|", "",func.name).replace('\\',"")[:]
                             with open(os.path.join(bad_functions, '(BadFunc)'+cve_id+'$'+f+'$'+name+".c"), 'w') as ff:
-                                string = "".join(BM_Bad_content[func.lines[0]-1:func.lines[1]+1])
+                                string = "".join(BM_Bad_content[func.lines[0]-1:func.lines[1]])   #???func.lines[1]+1 or func.lines[1]
                                 ff.write(string)
                             break
                     
