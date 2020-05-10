@@ -249,6 +249,7 @@ def parseFile_shallow(srcFileName):
 def parseFile_deep(srcFileName):
     global javaCallCommand
     global delimiter
+    caller = ""
     setEnvironment(caller)
     # this parses function definition plus body.
     javaCallCommand += "\"" + srcFileName + "\" 1"

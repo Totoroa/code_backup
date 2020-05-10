@@ -3,12 +3,45 @@ Produce slice from pdg.
 '''
 import re
 import copy
+import bitarray
+
+import parseutility2 as pu
+
+bloomfilter_size = 2097152
+filter_1 = bitarray.bitarray(bloomfilter_size)
 
 class nodes:
     def __init__(self, line_number):
         self.node_id = line_number
         self.from_node = []  #in
         self.to_node = []  #out
+
+def fnv1a_hash(string):
+    '''
+    FNV-1a 32bit hash (http://isthe.com/chongo/tech/comp/fnv/)
+    '''
+    hash = 2166136261
+    for c in string:
+        hash ^= ord(c)
+        hash *= 16777619
+        hash &= 0xFFFFFFFF
+    return hash
+
+def procude_funcBody_hash(FileName):
+    '''
+    return the hash value of abstracted and normalized function Body.
+    '''
+    function = pu.parseFile_deep(FileName)
+    if len(function) != 1:
+        print "The file <", FileName, "> has ", len(function), " funcitons."
+        return ""
+    absBody = pu.abstract(function[0], 4)[1]
+    absBody = pu.normalize(absBody)
+    hash_value = fnv1a_hash(absBody)
+    
+    #print "hash_value:", hash_value
+    #print "absBody", absBody
+    return [hash_value, absBody]
 
 def get_nodes(line_pair, nodes_id):
     '''
@@ -20,9 +53,9 @@ def get_nodes(line_pair, nodes_id):
         temp = nodes(node)
         for pair in line_pair:
             if pair[0] == node:
-                n.to_node.append(pair[1])
+                temp.to_node.append(pair[1])
             elif pair[1] == node:
-                n.from_node.append(pair[0])
+                temp.from_node.append(pair[0])
         temp.from_node = list(set(temp.from_node))
         temp.to_node = list(set(temp.to_node))
         node_list.append(temp)
@@ -45,19 +78,21 @@ def get_slice_of_node(nodes_dict, node_id):
     copy_nodeDict = copy.deepcopy(nodes_dict)    
     while queue_out:
         current_node = queue_out[0]
+        queue_out = queue_out[1:]
         result.append(current_node)
         queue_out.extend(copy_nodeDict[current_node].to_node)
         copy_nodeDict[current_node].to_node = []
         
     while queue_in:
         current_node = queue_in[0]
+        queue_in = queue_in[1:]
         result.append(current_node)
         queue_in.extend(copy_nodeDict[current_node].from_node)
         copy_nodeDict[current_node].from_node = []
     
     result = list(set(result))
     return result
-    
+
 def slice_from_project(lines_numbers):
     '''
     lines_numbers(String) looks like: (29,30)(32,41)(41,42)(37,37)(32,55)
@@ -75,9 +110,26 @@ def slice_from_project(lines_numbers):
     nodes_id = [i for j in line_pair for i in j]
     nodes_id = list(set(nodes_id))
     
+    #print "1-1111111"
     nodes_dic = get_nodes(line_pair, nodes_id)
+    #print "1-2222222"
     result = {}
+    #print "1-33333333"
     for node in nodes_id:
         tmp = get_slice_of_node(nodes_dic, node)
         result[node] = tmp
+    #print "1-44444444"
     return result
+
+def get_slice_content(func_content, line_numbers):
+    '''
+    return the slice content corresponding to the line_number(that is 'node_id')
+    '''
+    content = ""
+    for num in line_numbers:
+        try:
+            content += func_content[num-1]   #two functions have same name is posible, need to be processed.
+        except IndexError:
+            print "[Error] list index out of range."
+            continue
+    return content

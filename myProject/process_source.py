@@ -25,7 +25,7 @@ for root, dirs, files in os.walk(source_path):
             function_list = pu.parseFile_deep(os.path.join(root, f))
             for functions in function_list:
                 func_location = os.path.join(root, f)
-                func_location = func_location.replace('\\', '#~') + '$' + functions.name
+                func_location = func_location.replace('\\', '#~') + '$' + functions.name + '$' + str(functions.lines[0]) + '-' + str(functions.lines[1]+2) + ".c"
                 with open(func_location, 'w') as ff:
                     func_content = file_content[functions.lines[0]-1 : functions.lines[1]+1]
                     ff.write("".join(func_content))
