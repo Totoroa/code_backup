@@ -13,8 +13,8 @@ filter_1 = bitarray.bitarray(bloomfilter_size)
 class nodes:
     def __init__(self, line_number):
         self.node_id = line_number
-        self.from_node = []  #in
-        self.to_node = []  #out
+        self.from_node = []                     #in
+        self.to_node = []                       #out
 
 def fnv1a_hash(string):
     '''
@@ -132,5 +132,5 @@ def get_slice_content(func_content, line_numbers):
             content += func_content[num-1]   #two functions have same name is posible, need to be processed.
         except IndexError:
             print "[Error] list index out of range."
-            continue
+            return ""
     return content

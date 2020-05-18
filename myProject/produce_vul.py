@@ -107,7 +107,7 @@ for root, dirs, files in os.walk(vul_func_path):
             idx += 1
 try:
     with open(result_fileName,"w") as result_f:
-        json.dump(written,result_f)
+        json.dump(written, result_f, encoding='gbk')
         print "Okay .."
 except BaseException:
     print "write file <", result_fileName, "> failed !"
