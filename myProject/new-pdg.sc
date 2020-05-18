@@ -1,16 +1,13 @@
-/* new-pdg.sc
+/* pdg.sc
 
-   This script returns the dependence(data/control) relationship of each function's lines in the corresponding cpg.
-   
-   Arguments:
-       inFile: The path to the extracted functions, eg: F:/data/self_vul_repo/functions/Bad
-       outFile: The path to restore the result, eg: F:/data/self_vul_repo/functions/Bad/BadFunc_lines
-   
-   Note: How to run this script ?
-   (1)You need to parse the functions by joern to generate a cpg: "./joern-parse <directory-to-functions> --out <path-to-store-cpg/name.bin>".
-   (2)Enter the joern-cli by "./joern". Then load the cpg generated in (1): "joern> loadCpg(<path-to-store-cpg/name.bin>)"
-   (3)Run the script on the loaded cpg.
-       joern> cpg.runScript("<path to new_pdg.sc>", Map("inFile"->"inFile-path", "outFile"->"outFile-path"))       
+   This script returns a complete PDG for functions matching a regex, or the whole CPG if no regex is specified. The PDG
+   is represented as two lists, one for the edges and another for the vertices.
+
+   The first list contains all of the edges in the PDG. The first entry in each tuple contains the ID of the incoming
+   vertex. The second entry in the tuple contains the ID of the outgoing vertex.
+
+   The second list contains all the vertices in the PDG. The first entry in each tuple contains the ID of the vertex
+   and the second entry contains the code stored in the vertex.
 */
 
 import gremlin.scala.{Edge, GremlinScala}
@@ -61,13 +58,27 @@ def subdirs2(dir: File): Array[File] = {
 
 // inFile: The path to the extracted functions, eg: F:/data/self_vul_repo/functions/Bad
 // outFile: The path to restore the result, eg: F:/data/self_vul_repo/functions/Bad/BadFunc_lines
-@main def main(inFile: String, outFile: String): Unit = {
+//flag = "src" or "vul"
+@main def main(inFile: String, outFile: String, flag: String): Unit = {
 	//val it = subdirs2(new File("F:\\data\\self_vul_repo\\functions\\Bad"))
 	val it = subdirs2(new File(inFile))
 	var start_time =new Date().getTime
 	for(d <- it){
 		val fileName = d.getName()
-		val methodName = d.getName().split("\\$",0)(2).dropRight(2)
+		var methodName = ""
+		if(flag == "vul")
+		{
+			methodName = d.getName().split("\\$",0)(2).dropRight(2)
+		}
+		else if(flag == "src")
+		{
+			methodName = d.getName.split("\\$",0)(1)
+		}
+		else
+		{
+			println("[-]wrong flag value.")
+			sys.exit()
+		}
 		println(methodName)
 		try{
 		  cpg.method(methodName).l.map{method =>
@@ -81,3 +92,4 @@ def subdirs2(dir: File): Array[File] = {
 	var runTime = (end_time - start_time)/1000.0
 	println("runTime: " + runTime + " s")
 }
+//before change..
